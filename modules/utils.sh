@@ -68,9 +68,8 @@ get_server_ip() {
 }
 
 call_if_enabled() {
-    local var_name="$1"
+    local var_value="$1"
     local func_name="$2"
-    local var_value="${!var_name:-}"
     if [[ "$var_value" == "y" ]]; then
         $func_name
     fi
