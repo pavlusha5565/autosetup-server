@@ -7,6 +7,7 @@
 `autosetup-server` is a Bash script designed to automate the initial configuration of Ubuntu servers. It provides an interactive interface for selecting and configuring essential components such as SSH, firewall, Squid forward proxy, and Docker, with minimal user intervention.
 
 > **Note:** Currently, only Ubuntu is supported. Compatibility with other distributions will be added in future releases.
+
 > **Important note:** This script is currently in testing and may contain bugs. Please, use it with caution and at your own risk.
 
 ## Features
@@ -34,23 +35,19 @@ autosetup-server/
 │   ├── docker.sh
 │   └── checkpoints.sh
 └── etc/                   # Example configs for services
-    ├── fail2ban/
-    ├── squid/
-    └── ssh/
 ```
 
 ## Requirements
 
-- Ubuntu Linux server
-- Bash 4+
+- Ubuntu 22+ Linux server
 - Run as root
 
 ## Installation
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd autosetup
+   git clone https://github.com/pavlusha5565/autosetup-server
+   cd autosetup-server
    ```
 2. Make the script executable:
    ```bash
