@@ -1,0 +1,55 @@
+# General settings
+Port 2222
+ListenAddress 0.0.0.0
+Protocol 2
+
+# Host key
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKey /etc/ssh/ssh_host_rsa_key
+
+# Auth security settings
+PermitRootLogin prohibit-password
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+
+# Broutforce security
+MaxAuthTries 3
+MaxSessions 5
+LoginGraceTime 2
+
+# Sessions security
+ClientAliveInterval 300
+ClientAliveCountMax 2
+TCPKeepAlive yes
+UsePAM yes
+
+StrictModes yes
+IgnoreRhosts yes
+HostbasedAuthentication no
+
+# Logging
+SyslogFacility AUTH
+LogLevel VERBOSE
+
+# Tounneling
+X11Forwarding no
+AllowAgentForwarding no
+AllowTcpForwarding no
+GatewayPorts no
+PermitTunnel no
+
+# Protect against DoS
+MaxStartups 10:30:60
+
+PrintMotd no
+# Banner /etc/issue.net
+
+# Localization
+AcceptEnv LANG LC_*
+
+# SFTP subsystem
+Subsystem sftp /usr/lib/openssh/sftp-server

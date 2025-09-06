@@ -1,0 +1,17 @@
+[DEFAULT]
+maxretry  = 1
+bantime   = 6h
+findtime  = 1h
+banaction = nftables-block
+loglevel  = DEBUG
+
+[sshd]
+enabled   = true
+port      = ssh
+filter    = sshd
+logpath   = /var/log/auth.log
+bantime   = 7d
+findtime  = 12h 
+
+bantime.increment = true
+bantime.factor    = 2
