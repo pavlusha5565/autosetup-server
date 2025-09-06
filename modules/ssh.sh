@@ -19,7 +19,8 @@ configure_ssh() {
 
 # SSH Key Generation Module
 generate_ssh_keys() {
-    local ssh_key_name="id_ed25519_$(date +%Y%m%d)"
+    local ssh_key_name
+    ssh_key_name="id_ed25519_$(date +%Y%m%d)"
     local ssh_dir="/root/.ssh"
     local ssh_key_path="$ssh_dir/$ssh_key_name"
 

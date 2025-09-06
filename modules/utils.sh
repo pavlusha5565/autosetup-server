@@ -46,8 +46,6 @@ get_hidden_input() {
 }
 
 install_packages() {
-    local packages=("$@")
-
     log_info "Installing packages: $*"
     sudo apt-get install -y "$@"
 }
