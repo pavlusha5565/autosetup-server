@@ -36,7 +36,7 @@ configure_ipv6() {
     user_ipv4=${user_ipv4:-$ext_ipv4}
 
     # Determine IPv4 mask
-    ipv4_mask=$(ip -o -f inet addr show $iface | awk '{print $4}' | cut -d'/' -f2 | head -n1)
+    ipv4_mask=$(ip -o -f inet addr show "$iface" | awk '{print $4}' | cut -d'/' -f2 | head -n1)
     ipv4_mask=${ipv4_mask:-24}
 
     # Get IPv4 gateway
