@@ -13,6 +13,7 @@ source ./modules/utils.sh
 source ./modules/ssh.sh
 source ./modules/firewall.sh
 source ./modules/squid.sh
+source ./modules/ipv6.sh
 source ./modules/docker.sh
 source ./modules/checkpoints.sh
 
@@ -32,6 +33,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 log_info "Welcome to the automated server setup script!"
+log_warn "This script is currently in testing and may contain bugs. Please, use it with caution and at your own risk."
 log_info "Please provide the following configuration options:"
 echo
 
@@ -45,6 +47,9 @@ if [[ "$INSTALL_SSH" == "y" ]]; then
   SSH_PORT=$(get_input "Enter SSH port" "22")
   GENERATE_SSH_KEYS=$(confirm "Do you want to generate a new pair of SSH keys?")
 fi
+
+# IPv6 Configuration
+CONFIGURE_IPV6=$(confirm "Do you want to configure IPv6 networking?")
 
 # Firewall Configuration
 INSTALL_NFTABLES=$(confirm "Do you want to install and configure nftables?")
@@ -65,12 +70,12 @@ if [[ "$INSTALL_SQUID" == "y" ]]; then
             log_error "Passwords do not match. Try again."
         fi
     done
+
 fi
 
 # Docker Configuration
 INSTALL_DOCKER=$(confirm "Do you want to install Docker?")
 
-#################################################
 # CONFIRMATION OF CONFIGURATIONS
 #################################################
 
@@ -82,6 +87,7 @@ echo
 i=1
 log_info "$((i++)). Configure SSH on port $SSH_PORT"
 [[ "$GENERATE_SSH_KEYS" == "y" ]] && log_info "$((i++)). Generate new SSH keys"
+[[ "$CONFIGURE_IPV6" == "y" ]] && log_info "$((i++)). Configure IPv6 networking"
 [[ "$INSTALL_NFTABLES" == "y" ]] && log_info "$((i++)). Install and configure nftables firewall"
 [[ "$INSTALL_FAIL2BAN" == "y" ]] && log_info "$((i++)). Install and configure Fail2Ban"
 [[ "$INSTALL_SQUID" == "y" ]] && log_info "$((i++)). Install and configure Squid proxy with user $PROXY_USER"
@@ -105,6 +111,10 @@ run_with_checkpoint "ssh_configured" call_if_enabled "$INSTALL_SSH" configure_ss
 run_with_checkpoint "ssh_keys_generated" call_if_enabled "$GENERATE_SSH_KEYS" generate_ssh_keys
 
 log_info "***************************************************"
+log_info "Configuring IPv6 networking..."
+run_with_checkpoint "ipv6_configured" call_if_enabled "$CONFIGURE_IPV6" configure_ipv6
+
+log_info "***************************************************"
 log_info "Setting up firewalls..."
 run_with_checkpoint "nftables_configured" call_if_enabled "$INSTALL_NFTABLES" configure_nftables
 run_with_checkpoint "fail2ban_configured" call_if_enabled "$INSTALL_FAIL2BAN" configure_fail2ban
@@ -118,7 +128,6 @@ log_info "***************************************************"
 log_info "Setting up Docker..."
 run_with_checkpoint "docker_configured" call_if_enabled "$INSTALL_DOCKER" configure_docker
 
-#################################################
 # FINALIZATION
 #################################################
 

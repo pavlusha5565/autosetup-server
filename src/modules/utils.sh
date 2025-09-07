@@ -50,10 +50,15 @@ install_packages() {
     sudo apt-get install -y "$@"
 }
 
-restart_service() {
-    local service="$1"
-    log_info "Restarting $service..."
-    sudo systemctl restart "$service"
+systemctl_command() {
+    local action="$1"
+    local service="$2"
+    log_info "${action^}ing $service..."
+    if ! systemctl list-units --full -all | grep -Fq "$service.service"; then
+        log_warn "Service $service does not exist. Skipping..."
+        return
+    fi
+    sudo systemctl "$action" "$service"
 }
 
 command_exists() {
@@ -68,11 +73,9 @@ get_server_ip() {
 }
 
 call_if_enabled() {
-    local var_name="$1"
+    local var_value="$1"
     local func_name="$2"
-    local var_value="${!var_name}"
     if [[ "$var_value" == "y" ]]; then
         $func_name
     fi
 }
-
