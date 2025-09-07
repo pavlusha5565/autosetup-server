@@ -35,11 +35,11 @@ configure_ipv6() {
     read -e -i "$ext_ipv4" -p "Enter external IPv4 (behind NAT, if applicable): " user_ipv4 || { log_error "Input cancelled."; return 1; }
     user_ipv4=${user_ipv4:-$ext_ipv4}
 
-    # Определение маски IPv4
+    # Determine IPv4 mask
     ipv4_mask=$(ip -o -f inet addr show $iface | awk '{print $4}' | cut -d'/' -f2 | head -n1)
     ipv4_mask=${ipv4_mask:-24}
 
-    # Получение IPv4 gateway
+    # Get IPv4 gateway
     gw_ipv4=$(ip route | grep default | awk '{print $3}')
     log_info "IPv4 gateway: $gw_ipv4"
     read -e -i "$gw_ipv4" -p "Enter IPv4 gateway: " user_gw_ipv4 || { log_error "Input cancelled."; return 1; }
