@@ -41,6 +41,7 @@ get_hidden_input() {
     local result
 
     read -s -p "$prompt (default $default): " result
+    echo
     echo "${result:-$default}"
 }
 
