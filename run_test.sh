@@ -1,50 +1,50 @@
 #!/bin/bash
 
-# Цвета для вывода
+# Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Имя образа и контейнера
+# Image and container names
 IMAGE_NAME="autosetup-test"
 CONTAINER_NAME="autosetup-container"
 BACKUP_NAME="autosetup-backup"
 
-# Проверка наличия docker
+# Check for docker presence
 if ! command -v docker &> /dev/null; then
-    echo -e "${RED}[ERROR]${NC} Docker не установлен. Пожалуйста, установите Docker и повторите попытку."
+    echo -e "${RED}[ERROR]${NC} Docker is not installed. Please install Docker and try again."
     exit 1
 fi
 
-# Функция для вывода информации
+# Function to print info messages
 info() {
     echo -e "${GREEN}[INFO]${NC} $1"
 }
 
-# Функция для вывода предупреждений
+# Function to print warning messages
 warn() {
     echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
-# Функция для вывода ошибок
+# Function to print error messages
 error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Функция проверки наличия контейнера
+# Function to check if container exists
 container_exists() {
     docker ps -a --format '{{.Names}}' | grep -q "^$1$"
     return $?
 }
 
-# Функция проверки наличия образа
+# Function to check if image exists
 image_exists() {
     docker images --format '{{.Repository}}:{{.Tag}}' | grep -q "^$1:latest$"
     return $?
 }
 
-# Функция для очистки (удаления) контейнера, если он существует
+# Function to clean up (remove) container if it exists
 cleanup_container() {
     if container_exists "$CONTAINER_NAME"; then
         info "Удаление существующего контейнера $CONTAINER_NAME..."
