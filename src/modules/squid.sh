@@ -15,7 +15,7 @@ configure_squid() {
     log_info "Creating password file for squid..."
     sudo htpasswd -b /etc/squid/passwd "$PROXY_USER" "$PROXY_PASS"
 
-    restart_service squid
+    systemctl_command restart squid
 
     log_info "------------------------------------------------------------"
     log_info "To connect to the proxy use the following data:"

@@ -5,8 +5,8 @@ configure_nftables() {
     install_packages nftables
 
     log_info "Enabling nftables..."
-    sudo systemctl enable nftables
-    sudo systemctl start nftables
+    systemctl_command enable nftables
+    systemctl_command start nftables
 }
 
 configure_ufw() {
@@ -45,5 +45,5 @@ configure_fail2ban() {
     log_info "Copying fail2ban config..."
     sudo cp -r ./etc/fail2ban/* /etc/fail2ban/
 
-    restart_service fail2ban
+    systemctl_command restart fail2ban
 }

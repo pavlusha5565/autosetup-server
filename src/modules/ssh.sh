@@ -14,7 +14,7 @@ configure_ssh() {
     log_warn "IMPORTANT: Password authentication is disabled in SSH configuration (PasswordAuthentication no)."
     log_warn "Before closing the session, make sure you have working key access!"
 
-    restart_service ssh
+    systemctl_command restart ssh
 }
 
 # SSH Key Generation Module

@@ -41,7 +41,6 @@ get_hidden_input() {
     local result
 
     read -s -p "$prompt (default $default): " result
-    echo
     echo "${result:-$default}"
 }
 
@@ -50,10 +49,15 @@ install_packages() {
     sudo apt-get install -y "$@"
 }
 
-restart_service() {
-    local service="$1"
-    log_info "Restarting $service..."
-    sudo systemctl restart "$service"
+systemctl_command() {
+    local action="$1"
+    local service="$2"
+    log_info "${action^}ing $service..."
+    if ! systemctl list-units --full -all | grep -Fq "$service.service"; then
+        log_warn "Service $service does not exist. Skipping..."
+        return
+    fi
+    sudo systemctl "$action" "$service"
 }
 
 command_exists() {
