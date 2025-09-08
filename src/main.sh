@@ -2,135 +2,137 @@
 
 #################################################
 # AUTOSETUP - Automated Server Setup Script
-# Version: 0.2
+# Version: 0.3
 #################################################
 
 # Strict mode bash
 set -euo pipefail
 
 # Load utility functions and modules
-source ./modules/utils.sh
-source ./modules/ssh.sh
-source ./modules/firewall.sh
-source ./modules/squid.sh
-source ./modules/ipv6.sh
-source ./modules/docker.sh
-source ./modules/checkpoints.sh
+source ./src/utils/console.sh
+source ./src/utils/utils.sh
+source ./src/modules/ssh.sh
+source ./src/modules/firewall.sh
+source ./src/modules/squid.sh
+source ./src/modules/ipv6.sh
+source ./src/modules/docker.sh
 
-init_autosetup_trap
+#################################################
+# FUNCTIONS
+#################################################
+
+# Execute SSH configuration function
+run_ssh_config() {
+    print_header "SSH Configuration"
+    ssh_port=$(get_input "Enter SSH port" "22")
+    configure_ssh "$ssh_port"
+    print_success "SSH configuration completed"
+    sshKeys=$(confirm "Do you want to generate new SSH keys?")
+    call_if_enabled "$sshKeys" run_ssh_keys_gen "$ssh_port"
+    pause
+}
+
+# Execute SSH key generation function
+run_ssh_keys_gen() {
+    local ssh_port="$1"
+    print_header "SSH Key Generation"
+    generate_ssh_keys "$ssh_port"
+    print_success "SSH key generation completed"
+    pause
+}
+
+# Execute IPv6 configuration function
+run_ipv6_config() {
+    print_header "IPv6 Configuration"
+    configure_ipv6
+    print_success "IPv6 configuration completed"
+    pause
+}
+
+# Execute nftables configuration function
+run_nftables_config() {
+    print_header "nftables Configuration"
+    configure_nftables
+    print_success "nftables configuration completed"
+    pause
+}
+
+# Execute Fail2Ban configuration function
+run_fail2ban_config() {
+    print_header "Fail2Ban Configuration"
+    configure_fail2ban
+    print_success "Fail2Ban configuration completed"
+    pause
+}
+
+# Execute UFW configuration function
+run_ufw_config() {
+    print_header "UFW Configuration"
+    configure_ufw
+    print_success "UFW configuration completed"
+    pause
+}
+
+# Execute Squid proxy configuration function
+run_squid_config() {
+    print_header "Squid Proxy Configuration"
+    configure_squid
+    print_success "Squid proxy configuration completed"
+    pause
+}
+
+# Execute Docker installation function
+run_docker_install() {
+    print_header "Docker Installation"
+    configure_docker
+    print_success "Docker installation completed"
+    pause
+}
 
 #################################################
 # MAIN EXECUTION
 #################################################
 
-# Error handling
-set -e
-
 # Check that script is run as root
 if [ "$EUID" -ne 0 ]; then
-    log_error "Please run the script as root"
+    print_error "Please run the script as root user"
     exit 1
 fi
 
-log_info "Welcome to the automated server setup script!"
-log_warn "This script is currently in testing and may contain bugs. Please, use it with caution and at your own risk."
-log_info "Please provide the following configuration options:"
-echo
+# Main loop for menu
+while true; do
+    clear
+    print_header "Automated Server Setup"
+    print_info "Please select an option to configure:"
 
-#################################################
-# COLLECTING CONFIGURATIONS
-#################################################
+    # Define menu options
+    OPTIONS=(
+        "Configure SSH"
+        "Configure IPv6"
+        "Configure nftables"
+        "Configure Fail2Ban"
+        "Configure UFW"
+        "Configure Squid Proxy"
+        "Install Docker"
+        "Exit"
+    )
 
-# SSH Configuration
-INSTALL_SSH=$(confirm "Do you want to install and configure ssh?")
-if [[ "$INSTALL_SSH" == "y" ]]; then
-  SSH_PORT=$(get_input "Enter SSH port" "22")
-  GENERATE_SSH_KEYS=$(confirm "Do you want to generate a new pair of SSH keys?")
-fi
+    # Call arrow menu function
+    arrow_menu "Server Configuration Menu:" "${OPTIONS[@]}"
+    CHOICE=$?
 
-# IPv6 Configuration
-CONFIGURE_IPV6=$(confirm "Do you want to configure IPv6 networking?")
-
-# Firewall Configuration
-INSTALL_NFTABLES=$(confirm "Do you want to install and configure nftables?")
-INSTALL_FAIL2BAN=$(confirm "Do you want to install and configure Fail2Ban?")
-
-# Squid Configuration
-INSTALL_SQUID=$(confirm "Do you want to install and configure Squid proxy?")
-if [[ "$INSTALL_SQUID" == "y" ]]; then
-    PROXY_USER=$(get_input "Enter username for proxy access" "proxy_user")
-
-    while true; do
-        PROXY_PASS=$(get_hidden_input "Enter password for user $PROXY_USER" "change_me")
-        log_info "Repeat the password for confirmation."
-        PROXY_PASS_CONFIRM=$(get_hidden_input "Repeat password for user $PROXY_USER" "change_me")
-        if [[ "$PROXY_PASS" == "$PROXY_PASS_CONFIRM" ]]; then
-            break
-        else
-            log_error "Passwords do not match. Try again."
-        fi
-    done
-
-fi
-
-# Docker Configuration
-INSTALL_DOCKER=$(confirm "Do you want to install Docker?")
-
-# CONFIRMATION OF CONFIGURATIONS
-#################################################
-
-# Summary of actions to perform
-echo
-log_info "The following actions will be performed:"
-echo
-
-i=1
-log_info "$((i++)). Configure SSH on port $SSH_PORT"
-[[ "$GENERATE_SSH_KEYS" == "y" ]] && log_info "$((i++)). Generate new SSH keys"
-[[ "$CONFIGURE_IPV6" == "y" ]] && log_info "$((i++)). Configure IPv6 networking"
-[[ "$INSTALL_NFTABLES" == "y" ]] && log_info "$((i++)). Install and configure nftables firewall"
-[[ "$INSTALL_FAIL2BAN" == "y" ]] && log_info "$((i++)). Install and configure Fail2Ban"
-[[ "$INSTALL_SQUID" == "y" ]] && log_info "$((i++)). Install and configure Squid proxy with user $PROXY_USER"
-[[ "$INSTALL_DOCKER" == "y" ]] && log_info "$((i++)). Install Docker"
-echo
-
-# Final confirmation
-PROCEED=$(confirm "Do you want to proceed with the setup?")
-if [[ "$PROCEED" != "y" ]]; then
-    log_info "Setup canceled by user. Exiting."
-    exit 0
-fi
-
-#################################################
-# EXECUTION OF CONFIGURATIONS
-#################################################
-
-log_info "***************************************************"
-log_info "Setting up SSH..."
-run_with_checkpoint "ssh_configured" call_if_enabled "$INSTALL_SSH" configure_ssh
-run_with_checkpoint "ssh_keys_generated" call_if_enabled "$GENERATE_SSH_KEYS" generate_ssh_keys
-
-log_info "***************************************************"
-log_info "Configuring IPv6 networking..."
-run_with_checkpoint "ipv6_configured" call_if_enabled "$CONFIGURE_IPV6" configure_ipv6
-
-log_info "***************************************************"
-log_info "Setting up firewalls..."
-run_with_checkpoint "nftables_configured" call_if_enabled "$INSTALL_NFTABLES" configure_nftables
-run_with_checkpoint "fail2ban_configured" call_if_enabled "$INSTALL_FAIL2BAN" configure_fail2ban
-run_with_checkpoint "ufw_configured" call_if_enabled "$INSTALL_NFTABLES" configure_ufw
-
-log_info "***************************************************"
-log_info "Setting up Squid proxy..."
-run_with_checkpoint "squid_configured" call_if_enabled "$INSTALL_SQUID" configure_squid
-
-log_info "***************************************************"
-log_info "Setting up Docker..."
-run_with_checkpoint "docker_configured" call_if_enabled "$INSTALL_DOCKER" configure_docker
-
-# FINALIZATION
-#################################################
-
-log_info "***************************************************"
-log_info "Server setup completed successfully!"
-log_info "Remember to verify that all services are working as expected."
+    # Process menu selection
+    case $CHOICE in
+        0) run_ssh_config ;;
+        1) run_ipv6_config ;;
+        2) run_nftables_config ;;
+        3) run_fail2ban_config ;;
+        4) run_ufw_config ;;
+        5) run_squid_config ;;
+        6) run_docker_install ;;
+        7)
+            print_info "Exiting the program..."
+            exit 0
+            ;;
+    esac
+done

@@ -2,6 +2,23 @@
 
 # Squid Proxy Configuration Module
 configure_squid() {
+    local PROXY_USER
+    local PROXY_PASS
+    local PROXY_PASS_CONFIRM
+    local SERVER_IP
+
+    PROXY_USER=$(get_input "Enter username for proxy access" "proxy_user")
+    while true; do
+        PROXY_PASS=$(get_hidden_input "Enter password for user $PROXY_USER" "change_me")
+        print_info "Please retype the password for confirmation."
+        PROXY_PASS_CONFIRM=$(get_hidden_input "Retype password for user $PROXY_USER" "change_me")
+        if [[ "$PROXY_PASS" == "$PROXY_PASS_CONFIRM" ]]; then
+            break
+        else
+            print_error "Passwords do not match. Please try again."
+        fi
+    done
+
     log_info "Configuring Squid proxy server..."
     install_packages squid apache2-utils
 
@@ -22,6 +39,6 @@ configure_squid() {
     log_info "Server IP address: $SERVER_IP"
     log_info "Port: 3128"
     log_info "Username: $PROXY_USER"
-    log_info "Password: $PROXY_PASS"
+    log_info "Password: ******"
     log_info "------------------------------------------------------------"
 }
