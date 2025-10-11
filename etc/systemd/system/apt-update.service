@@ -1,0 +1,9 @@
+[Unit]
+Description=Nightly apt update
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/apt update
+
+[Install]
+WantedBy=multi-user.target
