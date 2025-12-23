@@ -2,7 +2,7 @@
 
 #################################################
 # AUTOSETUP - Automated Server Setup Script
-# Version: 0.3
+# Version: 0.4
 #################################################
 
 # Strict mode bash
@@ -11,6 +11,8 @@ set -euo pipefail
 # Load utility functions and modules
 source ./src/utils/console.sh
 source ./src/utils/utils.sh
+source ./src/modules/checkpoints.sh
+source ./src/modules/bootstrap.sh
 source ./src/modules/ssh.sh
 source ./src/modules/firewall.sh
 source ./src/modules/squid.sh
@@ -18,8 +20,32 @@ source ./src/modules/ipv6.sh
 source ./src/modules/docker.sh
 
 #################################################
+# TRAP HANDLERS
+#################################################
+
+# Cleanup function called on script interruption
+cleanup() {
+    print_error "Script interrupted by user"
+    exit 130
+}
+
+# Initialize trap handlers
+trap cleanup SIGINT SIGTERM
+
+#################################################
 # FUNCTIONS
 #################################################
+
+# Execute SSH configuration function
+run_initial_setup() {
+    print_header "Initial System Setup"
+    if initial_setup; then
+        print_success "Initial system setup completed"
+    else
+        print_warning "Initial setup not completed. See messages above."
+    fi
+    pause
+}
 
 # Execute SSH configuration function
 run_ssh_config() {
@@ -107,6 +133,7 @@ while true; do
 
     # Define menu options
     OPTIONS=(
+        "Initial System Setup"
         "Configure SSH"
         "Configure IPv6"
         "Configure nftables"
@@ -123,14 +150,15 @@ while true; do
 
     # Process menu selection
     case $CHOICE in
-        0) run_ssh_config ;;
-        1) run_ipv6_config ;;
-        2) run_nftables_config ;;
-        3) run_fail2ban_config ;;
-        4) run_ufw_config ;;
-        5) run_squid_config ;;
-        6) run_docker_install ;;
-        7)
+        0) run_initial_setup ;;
+        1) run_ssh_config ;;
+        2) run_ipv6_config ;;
+        3) run_nftables_config ;;
+        4) run_fail2ban_config ;;
+        5) run_ufw_config ;;
+        6) run_squid_config ;;
+        7) run_docker_install ;;
+        8)
             print_info "Exiting the program..."
             exit 0
             ;;

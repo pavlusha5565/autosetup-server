@@ -57,6 +57,7 @@ autosetup-server/
 ## Usage
 
 Run the script as root:
+
 ```bash
 sudo ./main.sh
 ```
@@ -76,6 +77,27 @@ Follow the interactive prompts to select components and enter configuration opti
 
 The `etc/` directory contains example configuration files for supported services. The script will use these as templates.
 
+### APT security updates (systemd)
+
+In `etc/systemd/system` there is a timer and service to run nightly APT metadata refresh and install only security updates:
+
+- `apt-update.timer` — runs daily at 03:00
+- `apt-update.service` — runs `apt-get update` and installs only security updates via `apt-security-upgrade.sh`
+
+Install and enable on the server:
+
+```bash
+sudo cp etc/systemd/system/apt-update.service /etc/systemd/system/
+sudo cp etc/systemd/system/apt-update.timer /etc/systemd/system/
+sudo cp etc/systemd/system/apt-security-upgrade.sh /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now apt-update.timer
+# Optional: run once immediately
+sudo systemctl start apt-update.service
+```
+
+Note: The logic targets Ubuntu/Debian and filters updates from security repositories only.
+
 ## Security
 
 - Requires root privileges
@@ -93,4 +115,3 @@ The `etc/` directory contains example configuration files for supported services
 ## License
 
 MIT
-

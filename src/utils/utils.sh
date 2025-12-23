@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Logging functions
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
 confirm() {
     local prompt="$1"
     local response
@@ -36,7 +49,7 @@ systemctl_command() {
     local action="$1"
     local service="$2"
     log_info "${action^}ing $service..."
-    if ! systemctl list-units --full -all | grep -Fq "$service.service"; then
+    if ! sudo systemctl list-unit-files | grep -qE "^${service}\.service"; then
         log_warn "Service $service does not exist. Skipping..."
         return
     fi
@@ -51,7 +64,7 @@ get_server_ip() {
     if ! command_exists curl; then
         install_packages curl
     fi
-    curl -s ifconfig.me
+    curl -s --connect-timeout 5 --max-time 10 ifconfig.me 2>/dev/null || echo ""
 }
 
 call_if_enabled() {

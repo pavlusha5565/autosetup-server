@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o pipefail
+
 configure_ipv6() {
     for cmd in ip curl netplan; do
         if ! command -v "$cmd" &>/dev/null; then
@@ -25,7 +27,7 @@ configure_ipv6() {
     fi
     log_info "Detected network interface: $iface"
 
-    ext_ipv4=$(curl -s ifconfig.me)
+    ext_ipv4=$(curl -s --connect-timeout 5 --max-time 10 ifconfig.me 2>/dev/null || echo "")
     if [ -z "$ext_ipv4" ]; then
         log_warn "Could not detect external IPv4. Enter manually."
         ext_ipv4=""
@@ -48,7 +50,7 @@ configure_ipv6() {
     # IPv6
     ipv6_needed=$(confirm "Do you need IPv6 support?")
     if [[ "$ipv6_needed" == "y" ]]; then
-        ext_ipv6=$(curl -6 -s ifconfig.me)
+        ext_ipv6=$(curl -6 -s --connect-timeout 5 --max-time 10 ifconfig.me 2>/dev/null || echo "")
         if [[ -z "$ext_ipv6" ]]; then
             log_warn "External IPv6 not detected. Enter manually."
             ext_ipv6=""

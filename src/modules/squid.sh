@@ -26,8 +26,10 @@ configure_squid() {
     sudo cp ./etc/squid/squid.conf /etc/squid/squid.conf
 
     SERVER_IP=$(get_server_ip)
-    log_info "Setting IP address $SERVER_IP in squid config..."
-    sudo sed -i "s/^acl localnet src .*/acl localnet src ${SERVER_IP}\/32/" /etc/squid/squid.conf
+    if [ -z "$SERVER_IP" ]; then
+        log_warn "Could not detect server IP automatically. Enter manually."
+        SERVER_IP=$(get_input "Enter server IP" "")
+    fi
 
     log_info "Creating password file for squid..."
     sudo htpasswd -b /etc/squid/passwd "$PROXY_USER" "$PROXY_PASS"
