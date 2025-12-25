@@ -154,7 +154,10 @@ install_zsh() {
     fi
 
     install_packages zsh curl
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+    # Установка ohmyzsh от имени sudo-пользователя
+    local user="${SUDO_USER:-$(whoami)}"
+    sudo -u "$user" sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 }
 
 initial_setup() {
