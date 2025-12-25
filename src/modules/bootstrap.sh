@@ -21,20 +21,6 @@ ensure_non_root_user_or_create() {
         local NEW_USER NEW_PASS NEW_PASS_CONFIRM
         NEW_USER=$(get_input "Enter new username" "admin")
 
-        while true; do
-            NEW_PASS=$(get_hidden_input "Enter password for user $NEW_USER" "")
-            NEW_PASS_CONFIRM=$(get_hidden_input "Retype password for user $NEW_USER" "")
-            if [[ -z "$NEW_PASS" ]]; then
-                log_warn "Password cannot be empty. Please try again."
-                continue
-            fi
-            if [[ "$NEW_PASS" == "$NEW_PASS_CONFIRM" ]]; then
-                break
-            else
-                log_error "Passwords do not match. Please try again."
-            fi
-        done
-
         log_info "Creating user $NEW_USER..."
         if ! id -u "$NEW_USER" >/dev/null 2>&1; then
             sudo adduser --gecos "" "$NEW_USER"
