@@ -6,7 +6,7 @@
 #################################################
 
 # Strict mode bash
-set -euo pipefail
+# set -euo pipefail
 
 # Load utility functions and modules
 source ./src/utils/console.sh
