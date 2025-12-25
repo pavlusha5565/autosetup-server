@@ -37,7 +37,7 @@ ensure_non_root_user_or_create() {
 
         log_info "Creating user $NEW_USER..."
         if ! id -u "$NEW_USER" >/dev/null 2>&1; then
-            sudo adduser --disabled-password --gecos "" "$NEW_USER"
+            sudo adduser --gecos "" "$NEW_USER"
         else
             log_warn "User $NEW_USER already exists. Skipping creation."
         fi
