@@ -146,6 +146,17 @@ install_systemd_templates() {
     log_info "Systemd units installation finished."
 }
 
+install_zsh() {
+    install_now=$(confirm "Install zsh shell (ohmyzsh)?")
+    if [[ "$install_now" != "y" ]]; then
+        log_error "Skipping install zsh with ohmyzsh shell"
+        return 1
+    fi
+
+    install_packages zsh curl
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+}
+
 initial_setup() {
     # 1) User check
     if ! ensure_non_root_user_or_create; then
@@ -157,6 +168,9 @@ initial_setup() {
 
     # 3) systemd templates
     install_systemd_templates
+
+    # 4) install zsh shell
+    install_zsh
 
     return 0
 }
