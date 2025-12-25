@@ -161,6 +161,8 @@ install_zsh() {
 }
 
 initial_setup() {
+    sudo apt update && sudo apt upgrade -y
+
     # 1) User check
     if ! ensure_non_root_user_or_create; then
         return 1
