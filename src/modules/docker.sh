@@ -2,11 +2,6 @@
 
 # Docker Installation Module
 configure_docker() {
-    if [[ "$INSTALL_DOCKER" != "y" ]]; then
-        log_warn "Skipping Docker installation."
-        return
-    fi
-
     log_info "Installing Docker..."
 
     if command -v docker &> /dev/null; then
