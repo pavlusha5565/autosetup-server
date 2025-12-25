@@ -6,7 +6,7 @@
 #################################################
 
 # Strict mode bash
-# set -euo pipefail
+#  set -euo pipefail
 
 # Load utility functions and modules
 source ./src/utils/console.sh
@@ -69,6 +69,9 @@ run_ssh_keys_gen() {
 
 # Execute IPv6 configuration function
 run_ipv6_config() {
+    print_header "NOT WORKING"
+    return 0;
+
     print_header "IPv6 Configuration"
     configure_ipv6
     print_success "IPv6 configuration completed"
