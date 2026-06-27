@@ -27,15 +27,14 @@ configure_ipv6() {
     fi
     log_info "Detected network interface: $iface"
 
-    ext_ipv4=$(curl -s --connect-timeout 5 --max-time 10 ifconfig.me 2>/dev/null || echo "")
-    if [ -z "$ext_ipv4" ]; then
-        log_warn "Could not detect external IPv4. Enter manually."
-        ext_ipv4=""
+    iface_ipv4=$(ip -o -f inet addr show "$iface" | awk '{print $4}' | cut -d'/' -f1 | head -n1)
+    if [ -z "$iface_ipv4" ]; then
+        log_warn "Could not detect interface IPv4. Enter manually."
     else
-        log_info "External IPv4: $ext_ipv4"
+        log_info "Interface IPv4: $iface_ipv4"
     fi
-    read -e -i "$ext_ipv4" -p "Enter external IPv4 (behind NAT, if applicable): " user_ipv4 || { log_error "Input cancelled."; return 1; }
-    user_ipv4=${user_ipv4:-$ext_ipv4}
+    read -e -i "$iface_ipv4" -p "Enter interface IPv4 address: " user_ipv4 || { log_error "Input cancelled."; return 1; }
+    user_ipv4=${user_ipv4:-$iface_ipv4}
 
     # Determine IPv4 mask
     ipv4_mask=$(ip -o -f inet addr show "$iface" | awk '{print $4}' | cut -d'/' -f2 | head -n1)
@@ -90,17 +89,12 @@ configure_ipv6() {
     echo -e "$netplan_content" | sudo tee "$netplan_file" > /dev/null
 
     log_info "Trying to apply netplan configuration..."
-    if sudo netplan try --timeout 30; then
-        sudo netplan apply
+    log_warn "Running 'netplan try' — config will auto-revert in 60s if not confirmed."
+    if sudo netplan try --timeout 60; then
         log_info "Netplan configuration applied successfully!"
-        return 0
     else
-        log_error "Failed to apply netplan configuration. Restoring backup."
-        if [ -f "$backup_file" ]; then
-            sudo cp "$backup_file" "$netplan_file"
-            sudo netplan apply
-            log_warn "Netplan config restored from backup."
-        fi
+        log_error "Netplan configuration was reverted. Check the config and try again."
         return 1
     fi
+    return 0
 }
