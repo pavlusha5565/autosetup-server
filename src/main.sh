@@ -123,7 +123,7 @@ run_docker_install() {
 # Execute user creation/configuration function
 run_user_setup() {
     print_header "User Setup"
-    if ensure_non_root_user_or_create; then
+    if setup_user; then
         print_success "User setup completed"
     else
         print_warning "User setup not completed. See messages above."

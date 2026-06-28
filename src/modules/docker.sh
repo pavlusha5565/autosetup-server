@@ -3,6 +3,7 @@
 # Docker Installation Module
 configure_docker() {
     log_info "Installing Docker..."
+    local user="${SUDO_USER:-$(whoami)}"
 
     if command -v docker &> /dev/null; then
         log_info "Docker is already installed. Skipping installation."
@@ -23,6 +24,6 @@ configure_docker() {
     install_packages docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
     sudo groupadd docker
-    sudo usermod -aG docker "$USER"
+    sudo -u "$user" usermod -aG docker "$user"
     log_info "Docker installed successfully!"
 }
