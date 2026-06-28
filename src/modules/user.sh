@@ -42,47 +42,45 @@ _interactive_select() {
     shift
     local -a items=("$@")
     local selected=0
-    local key esc
-
-    # hide cursor
-    tput civis 2>/dev/null
+    local key
 
     _draw_menu() {
         local i
         for i in "${!items[@]}"; do
             if [[ $i -eq $selected ]]; then
-                echo -e "  \033[1;32m> ${items[$i]}\033[0m"
+                printf "  \033[1;32m> %s\033[0m\n" "${items[$i]}"
             else
-                echo "    ${items[$i]}"
+                printf "    %s\n" "${items[$i]}"
             fi
         done
-    }
+    } >/dev/tty
 
-    echo "$prompt"
+    # All display and input goes through /dev/tty so it works inside $()
+    printf '%s\n' "$prompt" >/dev/tty
+    tput civis >/dev/tty 2>/dev/null
     _draw_menu
 
     while true; do
-        # read single keypress (handles arrow keys as escape sequences)
-        IFS= read -rsn1 key
+        IFS= read -rsn1 key </dev/tty
         if [[ "$key" == $'\x1b' ]]; then
-            IFS= read -rsn2 key
+            IFS= read -rsn2 key </dev/tty
             case "$key" in
-                '[A') # up
+                '[A')
                     (( selected > 0 )) && (( selected-- ))
                     ;;
-                '[B') # down
+                '[B')
                     (( selected < ${#items[@]} - 1 )) && (( selected++ ))
                     ;;
             esac
         elif [[ "$key" == "" || "$key" == $'\n' ]]; then
             break
         fi
-        # redraw
-        tput cuu "${#items[@]}" 2>/dev/null
+        tput cuu "${#items[@]}" >/dev/tty 2>/dev/null
         _draw_menu
     done
 
-    tput cnorm 2>/dev/null
+    tput cnorm >/dev/tty 2>/dev/null
+    # only the chosen value goes to stdout — captured by $()
     echo "${items[$selected]}"
 }
 
