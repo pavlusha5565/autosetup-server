@@ -133,6 +133,28 @@ _configure_ssh_keys() {
     esac
 }
 
+_relocate_script() {
+    local new_user="$1"
+    local script_dir project_root project_name dest
+
+    script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+    project_root=$(cd "$script_dir/../.." && pwd)
+    project_name=$(basename "$project_root")
+    dest="/home/$new_user/$project_name"
+
+    if [[ -e "$dest" ]]; then
+        log_warn "$dest already exists. Skipping relocation."
+        return
+    fi
+
+    log_info "Moving $project_root to $dest..."
+    sudo mv "$project_root" "$dest"
+    sudo chown -R "$new_user:$new_user" "$dest"
+    log_info "Script moved to $dest"
+
+    RELOCATED_PATH="$dest"
+}
+
 setup_user() {
     local NEW_USER
     NEW_USER=$(get_input "Enter new username" "admin")
@@ -148,10 +170,21 @@ setup_user() {
 
     _configure_ssh_keys "$NEW_USER"
 
+    local RELOCATED_PATH=""
+    local move_answer
+    move_answer=$(confirm "Переместить скрипт в домашнюю директорию нового пользователя?")
+    if [[ "${move_answer,,}" == "y" || "${move_answer,,}" == "yes" ]]; then
+        _relocate_script "$NEW_USER"
+    fi
+
     log_info "User $NEW_USER is ready. Sign in as this user and re-run the script with sudo."
     log_info "Commands:"
     log_info "  su - $NEW_USER"
-    log_info "  sudo ./src/main.sh"
+    if [[ -n "$RELOCATED_PATH" ]]; then
+        log_info "  cd $RELOCATED_PATH && sudo ./src/main.sh"
+    else
+        log_info "  sudo ./src/main.sh"
+    fi
 
     return 1
 }

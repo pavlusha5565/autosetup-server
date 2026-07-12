@@ -23,7 +23,9 @@ configure_docker() {
     sudo apt-get update
     install_packages docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    sudo groupadd docker
-    sudo -u "$user" usermod -aG docker "$user"
+    if ! getent group docker >/dev/null; then
+        sudo groupadd docker
+    fi
+    sudo usermod -aG docker "$user"
     log_info "Docker installed successfully!"
 }
