@@ -49,9 +49,11 @@ EOF
 
     # Enable appropriate timers (Ubuntu uses apt-daily*, Debian may use unattended-upgrades.timer)
     log_info "Enabling automatic upgrade timers..."
-    if sudo systemctl list-unit-files | grep -q '^apt-daily\.timer'; then
+    # No `list-unit-files | grep -q`: under pipefail (set in ipv6.sh) grep -q exits early,
+    # systemctl dies with SIGPIPE and the check is always false
+    if sudo systemctl cat apt-daily.timer &>/dev/null; then
         sudo systemctl enable --now apt-daily.timer apt-daily-upgrade.timer || log_warn "Failed to enable apt-daily timers"
-    elif sudo systemctl list-unit-files | grep -q '^unattended-upgrades\.timer'; then
+    elif sudo systemctl cat unattended-upgrades.timer &>/dev/null; then
         sudo systemctl enable --now unattended-upgrades.timer || log_warn "Failed to enable unattended-upgrades timer"
     else
         log_warn "No known upgrade timers found. Manual configuration may be required."

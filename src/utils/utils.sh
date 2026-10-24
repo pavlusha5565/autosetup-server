@@ -49,7 +49,8 @@ systemctl_command() {
     local action="$1"
     local service="$2"
     log_info "${action^}ing $service..."
-    if ! sudo systemctl list-unit-files | grep -qE "^${service}\.service"; then
+    # systemctl cat instead of `list-unit-files | grep -q` — the pipe breaks under pipefail
+    if ! sudo systemctl cat "${service}.service" &>/dev/null; then
         log_warn "Service $service does not exist. Skipping..."
         return
     fi
